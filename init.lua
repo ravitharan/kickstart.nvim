@@ -955,4 +955,13 @@ vim.api.nvim_create_autocmd('FileType', {
   pattern = 'python',
   command = 'setlocal equalprg=yapf',
 })
+
+local config_folder = os.getenv 'NVIM_APPNAME'
+if config_folder then
+  local legacy_path = '~/.config/' .. config_folder .. '/vim/custom/plugins/legacy.vim'
+  vim.cmd.source(legacy_path)
+else
+  vim.cmd.source '~/.config/nvim/vim/custom/plugins/legacy.vim'
+end
+
 -- The line beneath this is called `modeline`. See `:help modeline`
