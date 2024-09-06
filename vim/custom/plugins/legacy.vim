@@ -49,7 +49,6 @@ set wildmenu
 :command! -nargs=1 SFileList call ArgFiles(<q-args>)
 :command! -nargs=0 CloseArgs call CloseArgFiles()
 :command! -nargs=0 GdbBtArrange call GdbBtRearrange()
-:command! -nargs=0 SParents call SearchParents()
 :command! -nargs=0 OpenSearchFile call OpenSearchFile()
 :nnoremap <leader>w :SFiles "<C-R><C-W>"<CR>
 :nnoremap <leader>W :SFiles "<C-R><C-A>"<CR>
@@ -368,78 +367,6 @@ function! Restore_search()
 endfunction
 
 autocmd  BufEnter  /tmp/S[a-z][0-9]   : call Restore_search()
-
-function! SearchParents()
-
-let lines = getline(1, "$")
-python3 << EOF
-
-import vim
-import subprocess
-
-def get_function(func_data_file, file_name, num):
-  file_offset = 0
-  num_lines = 0
-  func_name = ""
-  line_num = int(num)
-
-  with open(func_data_file) as f:
-    num_files = int(f.readline())
-
-    for i in range(num_files):
-      line = f.readline()
-      file_data = line.split()
-      if (file_data[0] == file_name):
-        file_offset = int(file_data[1])
-        num_lines = int(file_data[2])
-        break
-
-    if (file_offset != 0):
-      f.seek(file_offset)
-      """Parent function is defined just above the requested line_num"""
-      for i in range(num_lines):
-        line = f.readline()
-        file_data = line.split()
-        current_line_num = int(file_data[0])
-        if (current_line_num > line_num):
-          break
-        if (current_line_num != line_num):
-          func_name = file_data[1]
-
-    f.closed
-  return func_name
-
-buf_lines = vim.eval('lines')
-project_file = vim.eval('g:FileName')
-func_data_file = project_file.replace("files_", "func_").replace(".txt", "")
-parents = []
-subprocess.check_call(['rm', '-f', '/tmp/parents_output'])
-for line in buf_lines:
-  line_number = line.split(":")
-  if len(line_number) >= 2:
-    func = get_function(func_data_file, line_number[0], line_number[1])
-    if len(func) > 0 and func not in parents:
-      with open('/tmp/parents_output', 'a') as outstream:
-        subprocess.check_call(['echo', '-e', "\n{0:s}\n".format(func)], stdout=outstream)
-      catproc = subprocess.Popen(['cat', project_file], stdout=subprocess.PIPE)
-      grepproc = subprocess.Popen(['xargs', 'grep', '-n', func],
-          stdin=catproc.stdout,
-          stdout=open("/tmp/parents_output", "a"))
-      grepproc.communicate()
-      parents.append(func)
-vim.command("let parents_vim = %s" % parents)
-EOF
-
-exe ":! mv /tmp/parents_output /tmp/S".g:Base.g:FileNo.""
-exe ":e /tmp/S".g:Base.g:FileNo.""
-"let b:search = pattern
-"let @/ = b:search
-let g:FileNo += 1
-if g:FileNo == 10
-  let g:FileNo = 0
-endif
-
-endfunction
 
 function! OpenSearchFile( )
   let FileLst = []

@@ -964,4 +964,6 @@ else
   vim.cmd.source '~/.config/nvim/vim/custom/plugins/legacy.vim'
 end
 
+require 'custom.plugins.search_parents'
+
 -- The line beneath this is called `modeline`. See `:help modeline`
