@@ -124,10 +124,6 @@ vim.o.breakindent = true
 -- Save undo history
 vim.o.undofile = true
 
--- Case-insensitive searching UNLESS \C or one or more capital letters in the search term
-vim.o.ignorecase = true
-vim.o.smartcase = true
-
 -- Keep signcolumn on by default
 vim.o.signcolumn = 'yes'
 
@@ -359,7 +355,7 @@ require('lazy').setup({
   -- Use the `dependencies` key to specify the dependencies of a particular plugin
 
   { -- Fuzzy Finder (files, lsp, etc)
-    'nvim-telescope/telescope.nvim',
+    'ravitharan/telescope.nvim',
     event = 'VimEnter',
     dependencies = {
       'nvim-lua/plenary.nvim',
@@ -407,11 +403,12 @@ require('lazy').setup({
         -- You can put your default mappings / updates / etc. in here
         --  All the info you're looking for is in `:help telescope.setup()`
         --
-        -- defaults = {
-        --   mappings = {
-        --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
-        --   },
-        -- },
+        defaults = {
+          path_display = { 'truncate' },
+          --   mappings = {
+          --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
+          --   },
+        },
         -- pickers = {}
         extensions = {
           ['ui-select'] = {
@@ -429,6 +426,7 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
       vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
       vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
+      vim.keymap.set('n', '<leader>st', builtin.tags, { desc = '[S]earch [T]ags' })
       vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
       vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
       vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
@@ -1012,5 +1010,35 @@ require('lazy').setup({
   },
 })
 
+vim.cmd.source '~/.config/nvim/lua/custom/plugins/legacy.vim'
+
+vim.cmd [[
+:nnoremap <leader>w :SFiles "<C-R><C-W>"<CR>
+:nnoremap <leader>W :SFiles "<C-R><C-A>"<CR>
+:nnoremap <leader>bw :SBuffers "<C-R><C-W>"<CR>
+:nnoremap <leader>Bw :SBuffers "<C-R><C-A>"<CR>
+:nnoremap <leader>n :let @+=expand("%:p").":".line('.').":\t".getline(".")<CR>
+:nnoremap ,f :let @+ = expand("%:t")<CR>
+:nnoremap ,F :let @+ = expand("%:p")<CR>
+:nnoremap ,w :let @+ = "<C-R><C-W>"<CR>
+:nnoremap ,W :let @+ = "<C-R><C-A>"<CR>
+]]
+
+if vim.opt.diff:get() then
+  vim.cmd.colorscheme 'pablo'
+end
+
+vim.opt.hlsearch = true
+
+vim.o.tabstop = 4
+vim.o.shiftwidth = 4
+vim.o.expandtab = true
+
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = 'python',
+  command = 'setlocal equalprg=yapf',
+})
+
+require 'custom/plugins/search_parents'
+
 -- The line beneath this is called `modeline`. See `:help modeline`
--- vim: ts=2 sts=2 sw=2 et
